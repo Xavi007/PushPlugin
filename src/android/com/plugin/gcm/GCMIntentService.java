@@ -78,23 +78,33 @@ public class GCMIntentService extends GCMBaseIntentService {
                 /* if (extras.getString("message") != null && extras.getString("message").length() != 0) { */
             } else {
 
-                JSONObject json = new JSONObject();
-                java.util.Set<String> keys = extras.keySet();
-                for (String key : keys) {
-                    try {
-                        // json.put(key, bundle.get(key)); see edit below
-                        json.put(key, JSONObject.wrap(extras.get(key)));
-                        Log.d(TAG, String.format("%s",key));
-                    } catch(JSONException e) {
-                        //Handle exception here
-                        Log.e(TAG, "Background notification  " + e.getMessage());
-                    }
-                }
                 //parse puts the message as an alert if you don't use custom json payload
-                /* JSONObject payload = extras.getJ; */
-                /* JSONObject data = payload.getJSONObject("data"); */
-                /* String message = data.getString("alert"); */
-                /* extras.putString("message", alert); */
+                try {
+                    Log.i(TAG, extras.toString());
+                    JSONObject data = new JSONObject(extras.getString("data"));
+                } catch(org.json.JSONException ex) {
+                    Log.e(TAG, "Background notification  " + ex.getMessage());
+                }
+                if(data != null) {
+                    Log.i(TAG, data.toString());
+                    String message = data.getString("alert");
+                    Iterator<String> keys = data.keys();
+                    while( keys.hasNext()) {
+                        String key = (String)keys.next();
+                        Log.i(TAG, "message in data alert:" + key);
+                        if(key.equals("badge") && data.get(key) instanceof Integer) {
+                            extras.putInt(key, (Integer)data.get(key));
+                        } else {
+                            try {
+                                extras.putString(key, (String)data.get(key));
+                            } catch(java.lang.ClassCastException ex) {
+                                Log.e(TAG, "key: " + key, ex);
+                            }
+                        }
+                    }
+                    extras.putString("message", message);
+                    Log.i(TAG, "Extras: " + extras.toString());
+                }
                 createNotification(context, extras);
             }
         }
