@@ -15,6 +15,8 @@ import android.util.Log;
 
 import com.google.android.gcm.GCMBaseIntentService;
 
+import java.util.*;
+
 @SuppressLint("NewApi")
 public class GCMIntentService extends GCMBaseIntentService {
 
@@ -68,13 +70,32 @@ public class GCMIntentService extends GCMBaseIntentService {
 				extras.putBoolean("foreground", true);
                 PushPlugin.sendExtras(extras);
 			}
-			else {
-				extras.putBoolean("foreground", false);
+			else if (extras.getString("message") != null && extras.getString("message").length() != 0) {
+                extras.putBoolean("foreground", false);
+                createNotification(context, extras);
 
                 // Send a notification if there is a message
-                if (extras.getString("message") != null && extras.getString("message").length() != 0) {
-                    createNotification(context, extras);
+                /* if (extras.getString("message") != null && extras.getString("message").length() != 0) { */
+            } else {
+
+                JSONObject json = new JSONObject();
+                java.util.Set<String> keys = extras.keySet();
+                for (String key : keys) {
+                    try {
+                        // json.put(key, bundle.get(key)); see edit below
+                        json.put(key, JSONObject.wrap(extras.get(key)));
+                        Log.d(TAG, String.format("%s",key));
+                    } catch(JSONException e) {
+                        //Handle exception here
+                        Log.e(TAG, "Background notification  " + e.getMessage());
+                    }
                 }
+                //parse puts the message as an alert if you don't use custom json payload
+                /* JSONObject payload = extras.getJ; */
+                /* JSONObject data = payload.getJSONObject("data"); */
+                /* String message = data.getString("alert"); */
+                /* extras.putString("message", alert); */
+                createNotification(context, extras);
             }
         }
 	}
