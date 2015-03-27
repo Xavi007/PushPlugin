@@ -80,30 +80,31 @@ public class GCMIntentService extends GCMBaseIntentService {
 
                 //parse puts the message as an alert if you don't use custom json payload
                 try {
-                    Log.i(TAG, extras.toString());
+                    /* Log.i(TAG, extras.toString()); */
                     JSONObject data = new JSONObject(extras.getString("data"));
-                } catch(org.json.JSONException ex) {
-                    Log.e(TAG, "Background notification  " + ex.getMessage());
-                }
-                if(data != null) {
-                    Log.i(TAG, data.toString());
-                    String message = data.getString("alert");
-                    Iterator<String> keys = data.keys();
-                    while( keys.hasNext()) {
-                        String key = (String)keys.next();
-                        Log.i(TAG, "message in data alert:" + key);
-                        if(key.equals("badge") && data.get(key) instanceof Integer) {
-                            extras.putInt(key, (Integer)data.get(key));
-                        } else {
-                            try {
-                                extras.putString(key, (String)data.get(key));
-                            } catch(java.lang.ClassCastException ex) {
-                                Log.e(TAG, "key: " + key, ex);
+                    if(data != null) {
+                        Log.i(TAG, data.toString());
+                        String message = data.getString("alert");
+                        Iterator<String> keys = data.keys();
+                        while( keys.hasNext()) {
+                            String key = (String)keys.next();
+                            Log.i(TAG, "message in data alert:" + key);
+                            if(key.equals("badge") && data.get(key) instanceof Integer) {
+                                extras.putInt(key, (Integer)data.get(key));
+                            } else {
+                                try {
+                                    extras.putString(key, (String)data.get(key));
+                                } catch(java.lang.ClassCastException ex) {
+                                    Log.e(TAG, "key: " + key, ex);
+                                }
                             }
                         }
+                        extras.putString("message", message);
+                        Log.i(TAG, "Extras: " + extras.toString());
                     }
-                    extras.putString("message", message);
-                    Log.i(TAG, "Extras: " + extras.toString());
+                } catch(org.json.JSONException ex) {
+                    // exception handling for JSONObject data
+                    Log.e(TAG, "Background notification  " + ex.getMessage());
                 }
                 createNotification(context, extras);
             }
